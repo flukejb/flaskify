@@ -1,0 +1,39 @@
+# This deploy can be used if deploying to k8s via other CI/CD pipeline 
+# e.g. githubActions, Jenkins, GitLab, helm, custom script etc.
+# The vanilla version rollout for the k8s svc and deploy use Terraform
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaskify
+  labels:
+    app: flaskify-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flaskify-app
+  template:
+    metadata:
+      labels:
+        app: flaskify-app
+    spec:
+      containers:
+      - name: flaskify
+        image: python:3.9-slim:latest
+        ports:
+        - containerPort: 8080
+        command: ["python", "flaskify.py"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaskify-app
+spec:
+  type: ClusterIP
+  selector:
+    app: flaskify-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
